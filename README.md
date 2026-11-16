@@ -1,8 +1,14 @@
 <img src="assets/header.svg" width="100%" alt="Retail Network Optimization"/>
 
-A retailer has 10 candidate warehouses and 40 candidate stores. Each store's demand falls with price, neighboring stores cannot differ in price by more than $5, every open warehouse pays rent, trucks carry 500 units and drivers work 8 hours. Which warehouses do you open, which stores do you serve, at what price, and how do the trucks run? The current plan makes $48,000 a day. The target was 10% better.
+A retailer has 10 candidate warehouses and 40 candidate stores. Each store's demand falls with price, neighboring stores cannot differ in price by more than $5, every open warehouse pays rent, trucks carry 500 units and drivers work 8 hours. Which warehouses do you open, which stores do you serve, at what price, and how do the trucks run?
 
-**Result: $55,210.64 a day, 15% over baseline.** 4 warehouses open, all 40 stores served, 22 routes.
+**Result: $55,210.64 a day.** 4 warehouses open, all 40 stores served, 22 routes.
+
+| Benchmark | Daily profit | This solution vs. it |
+|---|---|---|
+| Part 1 target set by the course | $10,000 | 5.5x |
+| Our Part 1 solution, built by hand without optimization (16 stores, 3 warehouses, 6 routes) | $15,176 | 3.6x |
+| Retailer's baseline stated in the Part 2 brief | $48,000 | +15% (target was +10%) |
 
 **Course:** BUDT 732 Decision Analytics, University of Maryland Smith School, Fall 2025. Team of 4. Solved with AMPL and Gurobi.
 
