@@ -1,6 +1,6 @@
 <img src="assets/header.svg" width="100%" alt="Retail Network Optimization"/>
 
-A retailer has 10 candidate warehouses and 40 candidate stores. Each store's demand falls with price, neighboring stores cannot differ in price by more than $5, every open warehouse pays rent, trucks carry 500 units and drivers work 8 hours. Which warehouses do you open, which stores do you serve, at what price, and how do the trucks run?
+A retailer can open up to 10 warehouses and 40 stores. Demand at each store drops as price goes up, neighboring stores cannot differ in price by more than $5, every open warehouse pays rent, trucks carry 500 units, and drivers work 8-hour shifts. Which warehouses do you open, which stores do you serve, what do you charge, and how do the trucks run?
 
 **Result: $55,210.64 a day.** 4 warehouses open, all 40 stores served, 22 routes.
 
@@ -16,11 +16,11 @@ A retailer has 10 candidate warehouses and 40 candidate stores. Each store's dem
 
 ## Approach
 
-One model with pricing, location, and routing together is not tractable at this size, so the problem is split into three stages that feed each other.
+One model that decides prices, locations, and routes at the same time is too big to solve at this size, so we split it into three steps, each feeding the next.
 
-**1. Price.** Store-by-store pricing runs into the neighbor price-gap rule, which turns the problem nonlinear. A single price for every store satisfies the rule automatically. $38 was the best uniform price on the demand curves from Part 1. With price fixed, each store's demand and daily profit contribution become constants.
+**1. Price.** Setting a different price at each store runs into the $5 neighbor rule and makes the problem nonlinear. One price for every store satisfies the rule on its own. $38 was the best single price on the demand curves from Part 1. With price fixed, each store's demand and daily profit become plain numbers.
 
-**2. Location and assignment (MILP).** Binary variables for open stores, open warehouses, and store-to-warehouse assignments. Constraints: each open store is assigned to exactly one warehouse, only open warehouses can serve, warehouse capacity, and a feasibility parameter that rules out any pairing where a round trip plus unloading exceeds 8 hours. Objective: store profit minus warehouse rent. Gurobi solves it in 137 branch-and-bound nodes.
+**2. Which warehouses and stores (MILP).** Yes/no variables for each store, each warehouse, and each store-to-warehouse pairing. Rules: every open store gets exactly one warehouse, only open warehouses can serve, warehouses cannot ship more than their capacity, and a pairing is off the table if a round trip plus unloading takes more than 8 hours. Goal: store profit minus warehouse rent. Gurobi solves it in 137 branch-and-bound nodes.
 
 ```
 maximize  sum(store_profit[i] * x[i]) - sum(wh_rent[w] * y[w])
@@ -30,7 +30,7 @@ s.t.      sum_w z[w,i] = x[i]            each open store gets one warehouse
           sum_i demand[i] * z[w,i] <= cap[w]
 ```
 
-**3. Routing (greedy).** For each warehouse, start a route at the nearest unserved store, then keep adding the nearest store that fits in the truck and keeps the route under 480 minutes including 30 minutes of unloading per stop. Each route costs $200 plus $0.10 a minute. Because the MILP only assigned stores that can be served in a single round trip, routing always succeeds.
+**3. Routes (greedy).** For each warehouse, start a route at the nearest unserved store, then keep adding the nearest store that still fits in the truck and keeps the route under 480 minutes, counting 30 minutes of unloading per stop. Each route costs $200 plus $0.10 a minute. Because step 2 only paired stores that fit in a single round trip, routing never gets stuck.
 
 | Stage | Value |
 |---|---|
@@ -51,7 +51,7 @@ Full assignments are in `outputs/routes.txt`, one line per route: warehouse, the
 
 ## My role
 
-Built several of the intermediate models on the way to this one, including a per-store pricing model and an early warehouse-assignment model in AMPL. The final solution uses the integer-programming formulation from class for location and assignment with a greedy heuristic for routing.
+I built several of the models we tried on the way here, including a per-store pricing model and an early warehouse-assignment model in AMPL. The final version uses the integer-programming formulation from class for the warehouse and store decisions and a greedy heuristic for routing.
 
 ## Repository
 
